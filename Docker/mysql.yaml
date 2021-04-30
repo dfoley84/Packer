@@ -1,0 +1,41 @@
+---
+    - name: Adding apt keys
+      hosts: localhost
+      tasks:
+      - name: Add Keys
+        apt_key:
+          url: https://packages.microsoft.com/keys/microsoft.asc
+          state: present
+      
+      - name:  adding Microsoft Repo to system
+        get_url:
+          url: https://packages.microsoft.com/config/ubuntu/18.04/prod.list
+          dest: /etc/apt/sources.list.d/mssql-release.list
+      
+      - name:
+        apt: update_cache=yes force_apt_get=yes cache_valid_time=3600
+
+      - name:
+        apt: upgrade=dist force_apt_get=yes
+          
+      - name: install MS_SQL package
+        apt:
+          name: "{{ item }}"
+          state: present
+        with_items:
+          - msodbcsql17
+          - mssql-tools
+        environment:
+          ACCEPT_EULA: 'y'
+        
+      
+      - name: Return motd to registered var
+        command: "{{ item }}"
+        with_items:
+          - echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bash_profile 
+          - echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bashrc
+
+      - name: install unixodbc-dev
+        apt:
+          name: unixodbc-dev
+          state: present

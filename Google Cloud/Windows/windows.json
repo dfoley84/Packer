@@ -1,0 +1,88 @@
+{
+    "variables": 
+    {
+        "account_file": ".json",
+        "Google_project_id": " ",
+        "startup_script": "winrm quickconfig -quiet & net user /add packer ChangeMeN0w! & net localgroup administrators packer /add & netsh advfirewall firewall set rule name=\"Windows Remote Management (HTTP-In)\" profile=public new remoteip=any & winrm set winrm/config/service @{AllowUnencrypted=\"true\"} & winrm set winrm/config/service/auth @{Basic=\"true\"} & powershell.exe -NoProfile -ExecutionPolicy Bypass -Command \"Set-ExecutionPolicy -ExecutionPolicy bypass -Force\"",
+        "shutdown_script": "Stop-Service winrm & Set-Service -Name winrm -StartupType Disabled"
+    },
+
+    "provisioners": [    
+        {
+            
+            "type": "powershell",
+            "inline": [
+              "Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))"
+              ]
+        },
+
+        {
+            "type": "powershell",
+            "script": "./filebeat.ps1"
+        },
+
+        {
+            "type": "powershell",
+            "script": "./metricbeat.ps1"
+        },
+        
+        {
+            "type": "powershell",
+            "script": "./winupdate.ps1"
+        },
+
+        {
+            "type": "windows-restart",
+            "restart_timeout": "30m"
+          },
+
+          {
+            "type": "powershell",
+            "script": "./winupdate.ps1"
+        },
+
+        {
+            "type": "windows-restart",
+            "restart_timeout": "30m"
+          },
+
+          {
+            "type": "powershell",
+            "inline": [
+                 "choco install -y git.install",
+                 "choco install -y install firefox",
+                 "choco install -y googlechrome",
+                 "choco install -y pgadmin3",
+                 "choco install -y winscp",
+                 "choco install -y irfanview",
+                 "choco install -y notepadplusplus.install",
+                 "choco install -y jre8"
+       
+            ]
+          }
+    ],
+
+    "builders": [
+        {
+            "type": "googlecompute",
+            "account_file": "{{ user `account_file` }}",
+            "project_id": "{{ user `Google_project_id` }}",
+            "region":"europe-west2",
+            "zone": "europe-west2-c",
+            "machine_type": "n1-standard-2",
+            "disk_size": 60,
+            "communicator": "winrm",
+            "winrm_username": "packer",
+            "winrm_insecure": true,
+            "image_description": "Windows baked Image",
+            "source_image": "windows-server-2016-dc-v20170227",
+            "subnetwork": "dev",
+            "metadata":
+             { 
+                "windows-startup-script-cmd": "{{user `startup_script`}}"
+            }
+        
+                    
+        }
+            ]
+}

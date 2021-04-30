@@ -1,0 +1,30 @@
+- hosts: 127.0.0.1
+  connection: local
+  #become: true
+
+  tasks:
+    - name: Install Python
+      apt: pkg = {{ item }} state = lastest
+      with_items:
+        - python-apt
+        - libcupti-dev
+        - python3-numpy
+        - python3-dev 
+        - python3-wheel
+        
+    - name: install Required Packages
+      apt: 
+        name: "{{ packages }}"
+      vars:
+        packages:
+          - libpcap0.8
+          - realmd
+          - sssd
+          - sssd-tools
+          - libnss-sss
+          - libpam-sss
+          - adcli
+          - oddjob
+          - oddjob-mkhomedir
+          - samba-common
+  

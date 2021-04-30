@@ -1,0 +1,62 @@
+{
+    "variables": 
+    {
+        "account_file": " ",
+        "Google_project_id": " "
+    },
+
+    "provisioners": [    
+    {
+        "type": "shell",
+        "inline": [
+            "sleep 30",
+            "apt update -y",
+            "apt upgrade -y"
+        ]
+    },
+      {
+          "type": "shell",
+          "inline": [
+              "sleep 30",
+              "apt-add-repository ppa:ansible/ansible -y",
+              "/usr/bin/apt-get update",
+              "/usr/bin/apt-get -y install ansible"
+          ]
+      },
+      {
+        "type": "shell",
+         "inline": [
+             "sleep 30",
+             "ansible-galaxy install geerlingguy.clamav"
+         ]
+      },
+      {
+        "type": "ansible-local",
+        "playbook_file": "/Ansible/playbook.yml"
+      },
+      {
+        "type": "ansible-local",
+        "playbook_file": "/Ansible/java.yml"
+      }
+      {
+        "type": "ansible-local",
+        "playbook_file": "/Ansible/elasticstack.yml"
+      }
+],
+"builders": [
+    {
+        "type": "googlecompute",
+        "account_file": "{{ user `account_file` }}",
+        "project_id": "{{ user `Google_project_id` }}",
+        "region":"europe-west2",
+        "zone": "europe-west2-c",
+        "machine_type": "n1-standard-2",
+        "disk_size": 60,
+        "disk_type": "pd-ssd",
+        "ssh_username" : "root",
+        "image_description": "Ubuntu baked Image",
+        "source_image_family": "ubuntu-1604-lts",
+        "subnetwork": "dev"
+    }
+        ]
+}

@@ -1,0 +1,9 @@
+- hosts: 127.0.0.1
+  connection: local
+  #become: true
+
+  tasks:
+    - name: Install Java 11 JDK
+      apt: 
+        name: openjdk-11-jre-headless 
+        state: present

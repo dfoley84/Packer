@@ -1,0 +1,133 @@
+{
+         "provisioners": [
+         {
+           "type": "shell-local",
+           "command": "sleep 60"
+         },
+      
+         {
+           "type": "powershell",
+           "elevated_user": "{{user `User_Name`}}",
+           "elevated_password": "{{user `User_Password`}}",
+           "inline": [
+             "Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))"
+            ]
+          },
+      
+          {
+            "type": "shell-local",
+            "command": "sleep 60"
+          },
+      
+           {
+             "type": "windows-update",
+             "search_criteria": "IsInstalled=0",
+             "filters": [
+               "exclude:$_.Title -like '*Preview*'",
+               "include:$_.AutoSelectOnWebSites"
+              ]
+            },
+      
+            {
+              "type": "windows-restart",
+              "restart_timeout": "30m"
+            },
+      
+           {
+             "type": "shell-local",
+             "command": "sleep 30"
+           },
+      
+          {
+             "type": "powershell",
+             "elevated_user": "{{user `User_Name`}}",
+             "elevated_password": "{{user `User_Password`}}",
+             "inline": ["choco upgrade chocolatey"]
+           },
+           
+           {
+             "type": "shell-local",
+             "command": "sleep 30"
+           },
+      
+           {
+           "type": "powershell",
+           "inline": [
+
+                "choco install -y git.install",
+                "choco install -y saltminion",
+                "choco install -y firefox",
+                "choco install -y googlechrome",
+                "choco install -y pgadmin3",
+                "choco install -y winscp",
+                "choco install -y irfanview",
+                "choco install -y notepadplusplus.install",
+                "choco install -y jre8",
+                "choco install -y visionapp --version 9.0.5222"
+           ]
+         },
+      
+         {
+           "type": "shell-local",
+           "command": "sleep 30"
+         },
+      
+         {
+          "type": "windows-update",
+          "search_criteria": "IsInstalled=0",
+          "filters": [
+            "exclude:$_.Title -like '*Preview*'",
+            "include:$_.AutoSelectOnWebSites"
+          ]
+        },
+        
+         {
+           "type": "windows-restart",
+           "restart_timeout": "30m"
+         },
+      
+         {
+          "type": "shell-local",
+          "command": "sleep 30"
+         }
+      ],
+
+    "variables":
+    {
+        "client_id": "",
+        "client_secret": "",
+        "tenant_id": "",
+        "subscription_id": "",
+        "vm_size": ""
+    },
+
+    "type": "powershell",
+    "inline": [
+      //"Add-WindowsFeature Web-Server"
+      "& $env:SystemRoot\\System32\\Sysprep\\Sysprep.exe /oobe /generalize /quiet /quit",
+      "while($true) { $imageState = Get-ItemProperty HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Setup\\State | Select ImageState; if($imageState.ImageState -ne 'IMAGE_STATE_GENERALIZE_RESEAL_TO_OOBE') { Write-Output $imageState.ImageState; Start-Sleep -s 10  } else { break } }"
+    ],
+
+"builders":
+[
+    {
+        "type": "azure-arm",
+        "client_id": "{{user `client_id`}}",
+        "client_secret": "{{user `client_secret`}}",
+        "tenant_id": "{{user `tenant_id`}}",
+        "subscription_id": "{{user `subscription_id`}}",
+        "managed_image_name": "mypacker",
+        "managed_image_resource_group_name": "Test",
+        "os_type": "Windows",
+        "image_publisher": "MicrosoftWindowsServer",
+        "image_offer": "WindowsServer",
+        "image_sku": "2016-Datacenter",
+        "communicator": "winrm",
+        "winrm_insecure": "true",
+        "winrm_timeout": "3m",
+        "winrm_username": "packer",
+        "location": "UK South",
+        "vm_size": "{{user `vm_size`}}"
+    }
+]
+}
