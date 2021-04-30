@@ -1,0 +1,28 @@
+---
+    - name: Pip3 Module Install
+      hosts: localhost
+      gather_facts: false
+      connection: winrm
+      tasks:
+      - name: Install Pip Modules
+        pip:
+          name: "{{ item }}"
+          executable: pip3
+        with_items:
+          - wheel
+          - setuptools
+          - Click
+          - Flask
+          - Flask-WTF
+          - itsdangerous
+          - Jinja2
+          - MarkupSafe
+          - Werkzeug
+          - WTForms
+          - pypyodbc
+          - requests
+          - prometheus-flask-exporter
+          - openapi-codec
+          - Flask-OAuthlib
+          - gunicorn
+          - pyodbc
